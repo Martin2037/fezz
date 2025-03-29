@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
+import Link from 'next/link';
+
 import {
   ReactFlow,
   Background,
@@ -11,6 +13,16 @@ import {
   Position,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import {useRouter} from "next/navigation";
+import {usePrivy, useWallets} from "@privy-io/react-auth";
+import {formatAddress} from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 // 重新设计节点样式，确保连接点位置一致
 const UserNode = ({ data }) => {
@@ -21,11 +33,11 @@ const UserNode = ({ data }) => {
       </div>
       <h3 className="text-lg font-medium text-center text-gray-700">{data.label}</h3>
       {/* 放在最右侧中间位置 */}
-      <Handle 
-        type="source" 
-        position={Position.Right} 
-        id="a" 
-        style={{ right: '-8px' }} 
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="a"
+        style={{ right: '-8px' }}
       />
     </div>
   );
@@ -35,37 +47,37 @@ const FezzNode = ({ data }) => {
   return (
     <div className="bg-purple-50 rounded-lg p-5 border border-purple-200 shadow-sm w-[180px] relative">
       {/* 左侧中间位置 */}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
-        id="a" 
-        style={{ left: '-8px' }} 
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="a"
+        style={{ left: '-8px' }}
       />
-      
+
       <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center">
         <span className="text-2xl">🤖</span>
       </div>
       <h3 className="text-xl font-medium text-center mb-1 text-gray-700">{data.label}</h3>
       <p className="text-sm text-center text-gray-500">{data.description}</p>
-      
+
       {/* 右侧三个连接点，调整为绝对定位 */}
-      <Handle 
-        type="source" 
-        position={Position.Right} 
-        id="a" 
-        style={{ right: '-8px', top: '25%' }} 
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="a"
+        style={{ right: '-8px', top: '25%' }}
       />
-      <Handle 
-        type="source" 
-        position={Position.Right} 
-        id="b" 
-        style={{ right: '-8px', top: '50%' }} 
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="b"
+        style={{ right: '-8px', top: '50%' }}
       />
-      <Handle 
-        type="source" 
-        position={Position.Right} 
-        id="c" 
-        style={{ right: '-8px', top: '75%' }} 
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="c"
+        style={{ right: '-8px', top: '75%' }}
       />
     </div>
   );
@@ -75,13 +87,13 @@ const ServerNode = ({ data }) => {
   return (
     <div className="bg-green-50 rounded-lg p-4 border border-green-200 shadow-sm w-[140px] relative">
       {/* 左侧中间位置 */}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
-        id="a" 
-        style={{ left: '-8px' }} 
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="a"
+        style={{ left: '-8px' }}
       />
-      
+
       <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-green-100 border border-green-200 flex items-center justify-center">
         <span className="text-sm">⚡</span>
       </div>
@@ -104,9 +116,9 @@ export default function Home() {
       id: 'fezz',
       type: 'fezzNode',
       position: { x: 350, y: 150 },
-      data: { 
+      data: {
         label: 'Fezz',
-        description: '智能调度中心' 
+        description: '智能调度中心'
       },
       draggable: false,
     },
@@ -135,9 +147,9 @@ export default function Home() {
 
   // 使用特定的边类型和明确的连接点
   const edges = [
-    { 
-      id: 'user-fezz', 
-      source: 'user', 
+    {
+      id: 'user-fezz',
+      source: 'user',
       sourceHandle: 'a',
       target: 'fezz',
       targetHandle: 'a',
@@ -145,9 +157,9 @@ export default function Home() {
       animated: true,
       style: { stroke: '#6366f1', strokeWidth: 2 },
     },
-    { 
-      id: 'fezz-server1', 
-      source: 'fezz', 
+    {
+      id: 'fezz-server1',
+      source: 'fezz',
       sourceHandle: 'a',
       target: 'server1',
       targetHandle: 'a',
@@ -155,9 +167,9 @@ export default function Home() {
       animated: true,
       style: { stroke: '#8b5cf6', strokeWidth: 2 },
     },
-    { 
-      id: 'fezz-server2', 
-      source: 'fezz', 
+    {
+      id: 'fezz-server2',
+      source: 'fezz',
       sourceHandle: 'b',
       target: 'server2',
       targetHandle: 'a',
@@ -165,9 +177,9 @@ export default function Home() {
       animated: true,
       style: { stroke: '#8b5cf6', strokeWidth: 2 },
     },
-    { 
-      id: 'fezz-server3', 
-      source: 'fezz', 
+    {
+      id: 'fezz-server3',
+      source: 'fezz',
       sourceHandle: 'c',
       target: 'server3',
       targetHandle: 'a',
@@ -189,6 +201,13 @@ export default function Home() {
     hideAttribution: true
   };
 
+  const router = useRouter()
+  const {ready, user, logout} = usePrivy()
+  const {wallets, ready: walletReady} = useWallets()
+  console.log('wallets', wallets)
+  console.log('user', user)
+  console.log('ready', ready)
+
   return (
     <div className="relative h-screen overflow-hidden bg-gradient-to-b from-background to-background/95">
       {/* 背景装饰 */}
@@ -196,7 +215,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
         <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
       </div>
-      
+
       {/* 主要内容 */}
       <main className="relative z-10 flex items-center justify-center h-full px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -209,7 +228,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
             Web3 智能对话平台
           </h1>
-          
+
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
             探索下一代去中心化 AI 对话体验，连接 Web3 世界，实现智能交互的无限可能
           </p>
@@ -217,7 +236,7 @@ export default function Home() {
           {/* CTA 按钮 */}
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-primary hover:bg-primary/90">
-              开始对话
+              <Link href="/chat">开始对话</Link>
             </Button>
             <Button size="lg" variant="outline">
               了解更多
@@ -249,6 +268,28 @@ export default function Home() {
               <Background color="#888" gap={15} size={1} style={{ opacity: 0.04 }} />
             </ReactFlow>
           </div>
+
+          {ready && walletReady ?
+              <div className={'cursor-pointer absolute right-4 top-4'}>
+                {wallets.length === 0 ?
+                    <Button onClick={() => router.push('/login')}>
+                      去登录
+                    </Button>
+                    :
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>{formatAddress(wallets[0].address)}</DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem>
+                          <div onClick={logout}>退出登录</div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                }
+              </div> :
+              <div className={'cursor-pointer absolute right-4 top-4'}>
+                loading...
+              </div>
+          }
         </motion.div>
       </main>
     </div>
