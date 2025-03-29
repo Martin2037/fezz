@@ -3,8 +3,19 @@ import { streamText, experimental_createMCPClient } from 'ai';
 
 export const maxDuration = 30;
 
+const initMcpList = [
+  {
+    name: '1',
+    url: '1',
+  },
+  {
+    name: '2',
+    url: '2',
+  },
+];
+
 export async function POST(req) {
-  const { messages, mcp_list } = await req.json();
+  const { messages, mcp_list = initMcpList } = await req.json();
 
   const mcpClients = await Promise.all(
     mcp_list.map(async (mcp) => {
