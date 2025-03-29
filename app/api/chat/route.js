@@ -5,13 +5,9 @@ export const maxDuration = 30;
 
 const initMcpList = [
   {
-    name: '1',
-    url: '1',
-  },
-  {
-    name: '2',
-    url: '2',
-  },
+    name: 'current_time',
+    url: 'https://router.mcp.so/sse/a7t8bhm8tnz4gh'
+  }
 ];
 
 export async function POST(req) {
