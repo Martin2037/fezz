@@ -4,7 +4,15 @@ import { useChat } from '@ai-sdk/react';
 import { MemoizedMarkdown } from '@/components/memoized-markdown';
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    body: { mcp_list: [
+        {
+          name: 'current_time',
+          url: 'http://localhost:3071/api/mcp/sse/goplus'
+        }
+      ]
+    },
+  });
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">

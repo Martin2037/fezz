@@ -3,12 +3,7 @@ import { streamText, experimental_createMCPClient } from 'ai';
 
 export const maxDuration = 30;
 
-const initMcpList = [
-  {
-    name: 'current_time',
-    url: 'http://localhost:3071/api/mcp/sse/goplus'
-  }
-];
+const initMcpList = [];
 
 export async function POST(req) {
   const { messages, mcp_list = initMcpList } = await req.json();
