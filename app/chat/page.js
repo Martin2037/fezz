@@ -1,44 +1,45 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { MemoizedMarkdown } from '@/components/memoized-markdown';
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
+  console.log(1111, messages);
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-
+      <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
         <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
           {messages.map(message => (
             <div key={message.id} className="whitespace-pre-wrap">
-              {message.role === 'user' ? 'User: ' : 'AI: '}
-              {message.parts.map((part, i) => {
-                switch (part.type) {
-                  case 'text':
-                    return <div key={`${message.id}-${i}`}>{part.text}</div>;
-                }
-              })}
+              <div className="flex justify-items-end text-right">
+                {message.role === 'user' ? 'User: ' : 'AI: '}
+                {message.parts.map((part, i) => {
+                  switch (part.type) {
+                    case 'text':
+                      return <div key={`${message.id}-${i}`}>{part.text}</div>;
+                  }
+                })}
+              </div>
+
+              <div className="prose space-y-2">
+                <MemoizedMarkdown id={message.id} content={message.content} />
+              </div>
             </div>
           ))}
 
           <form onSubmit={handleSubmit}>
             <input
-              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl
-         focus:border-blue-500 focus:ring-4 focus:ring-blue-100
-         transition-all duration-200 placeholder:text-gray-400
-         shadow-sm hover:shadow-md"
+              className="fixed bottom-10 left-10 right-10 flex border border-input px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700"
               value={input}
               placeholder="Say something..."
               onChange={handleInputChange}
             />
           </form>
         </div>
-
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        footer
-      </footer>
+      </div>
     </div>
   );
 }
