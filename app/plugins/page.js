@@ -1,7 +1,7 @@
 'use client';
 
 
-import {useState} from 'react';
+import { useState } from 'react';
 
 export default function Plugins() {
 
@@ -20,24 +20,80 @@ export default function Plugins() {
     }
   ]);
 
+  const [modalObj, setModalObj] = useState();
+
+  const handleAdd = () => {
+    setModalObj({
+      title: '新增',
+      content: (
+        <>
+          <input
+            type="text"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white placeholder-gray-400"
+            placeholder="插件名称"
+            required
+          />
+          <input
+            type="text"
+            class="mt-3 w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white placeholder-gray-400"
+            placeholder="版本"
+            required
+          />
+        </>
+      ),
+    });
+  };
+
   const handleEdit = (plugin) => {
     // setFormData(plugin);
+    setModalObj({
+      title: '编辑',
+      content: (
+        <>
+          <input
+            value={plugin.name}
+            type="text"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white placeholder-gray-400"
+            placeholder="插件名称"
+            required
+          />
+          <input
+            value={plugin.version}
+            type="text"
+            class="mt-3 w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white placeholder-gray-400"
+            placeholder="版本"
+            required
+          />
+        </>
+      ),
+    });
   };
 
   const setDeleteTarget = (plugin) => {
-    // del
+    setModalObj({
+      title: '删除' + plugin.name,
+      content: '确认删除嘛',
+    });
+  };
+
+  const closeModal = () => {
+    setModalObj(undefined);
   };
 
   return (
     <div className="overflow-x-auto rounded-lg border shadow-sm">
       <header className="text-center">
-        插件管理
+        <h4
+          className="mt-6 mb-6 text-2xl font-bold tracking-tight sm:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+          插件管理
+        </h4>
       </header>
       <div className="mb-8 bg-gray-50 p-6 rounded-lg shadow">
         <div className="space-y-4">
           <div className="flex justify-end space-x-3">
             <button
               type="submit"
+              onClick={handleAdd}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700"
             >
               新增插件
@@ -92,6 +148,23 @@ export default function Plugins() {
         ))}
         </tbody>
       </table>
+
+      {
+        modalObj && (
+          <div id="modal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">{modalObj?.title}</h3>
+                <button onClick={closeModal} class="text-gray-500 hover:text-gray-700">×</button>
+              </div>
+              <p class="text-gray-600">{modalObj?.content}</p>
+              <button onClick={closeModal} class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                确认
+              </button>
+            </div>
+          </div>
+        )
+      }
     </div>
   )
 }

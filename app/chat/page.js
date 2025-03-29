@@ -6,8 +6,6 @@ import { MemoizedMarkdown } from '@/components/memoized-markdown';
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
-  console.log(1111, messages);
-
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -16,12 +14,6 @@ export default function Chat() {
             <div key={message.id} className="whitespace-pre-wrap">
               <div className="flex justify-items-end text-right">
                 {message.role === 'user' ? 'User: ' : 'AI: '}
-                {message.parts.map((part, i) => {
-                  switch (part.type) {
-                    case 'text':
-                      return <div key={`${message.id}-${i}`}>{part.text}</div>;
-                  }
-                })}
               </div>
 
               <div className="prose space-y-2">
