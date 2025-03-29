@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
+import Link from 'next/link';
+
 import {
   ReactFlow,
   Background,
@@ -217,7 +219,7 @@ export default function Home() {
           {/* CTA 按钮 */}
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-primary hover:bg-primary/90">
-              开始对话
+              <Link href="/chat">开始对话</Link>
             </Button>
             <Button size="lg" variant="outline">
               了解更多
