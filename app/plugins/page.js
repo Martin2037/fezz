@@ -1,7 +1,7 @@
 'use client';
 
 
-import {useState} from "react";
+import {useState} from 'react';
 
 export default function Plugins() {
 
@@ -25,8 +25,8 @@ export default function Plugins() {
   };
 
   const setDeleteTarget = (plugin) => {
-    //
-  }
+    // del
+  };
 
   return (
     <div className="overflow-x-auto rounded-lg border shadow-sm">

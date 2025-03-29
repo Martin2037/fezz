@@ -6,7 +6,7 @@ export const maxDuration = 30;
 const initMcpList = [
   {
     name: 'current_time',
-    url: 'https://router.mcp.so/sse/a7t8bhm8tnz4gh'
+    url: 'http://localhost:3071/api/mcp/sse/goplus'
   }
 ];
 
