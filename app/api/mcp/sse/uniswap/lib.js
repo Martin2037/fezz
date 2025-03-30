@@ -1,10 +1,6 @@
-import {chainIdToMoralis, ChainRpc} from "@/app/const/server";
-import {ethers} from "ethers";
+import {chainIdToMoralis} from "@/app/const/server";
 import {getTokensMetadata} from "@/app/api/mcp/sse/moralis/lib";
-import {CurrencyAmount, Percent, Token, TradeType} from "@uniswap/sdk-core";
-import {AlphaRouter, SwapType} from "@uniswap/smart-order-router";
 import ky from "ky";
-import {Pair, Route, Trade} from "@uniswap/v2-sdk";
 
 export async function getRoute(walletAddress, inTokenAddress, outTokenAddress, chainId, amountIn) {
     try {

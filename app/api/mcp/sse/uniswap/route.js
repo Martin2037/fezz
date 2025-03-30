@@ -5,12 +5,6 @@ import {
     createExpressRequest
 } from "../../transport.js";
 import {z} from "zod";
-import {ethers} from "ethers";
-import {chainIdToMoralis, ChainRpc} from "@/app/const/server";
-import {CurrencyAmount, Percent, Token, TradeType} from "@uniswap/sdk-core";
-import {FeeAmount} from "@uniswap/v3-sdk";
-import {AlphaRouter, SwapType} from "@uniswap/smart-order-router";
-import {getTokensMetadata} from "@/app/api/mcp/sse/moralis/lib";
 import {getRoute} from "@/app/api/mcp/sse/uniswap/lib";
 
 // 创建一个新的 MCP 服务器实例
