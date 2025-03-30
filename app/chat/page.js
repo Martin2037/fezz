@@ -11,7 +11,7 @@ import {
   useXChat,
 } from '@ant-design/x';
 import { createStyles } from 'antd-style';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   CloudUploadOutlined,
   CommentOutlined,
@@ -216,7 +216,6 @@ const roles = {
 
 import { useChat } from '@ai-sdk/react';
 import { MemoizedMarkdown } from '@/components/memoized-markdown';
-import Thinking from '@/components/chat-thinking';
 
 const ChatPage = () => {
   // ==================== Style ====================
@@ -224,13 +223,14 @@ const ChatPage = () => {
 
   // ==================== State ====================
   const [headerOpen, setHeaderOpen] = React.useState(false);
-  const [content, setContent] = React.useState('');
+  // const [content, setContent] = React.useState('');
   const [conversationsItems, setConversationsItems] = React.useState(defaultConversationsItems);
   const [activeKey, setActiveKey] = React.useState(defaultConversationsItems[0].key);
   const [attachedFiles, setAttachedFiles] = React.useState([]);
+  const senderRef = useRef(null);
 
   // new ai
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     body: { mcp_list: [
         {
           name: 'current_time',
@@ -238,6 +238,7 @@ const ChatPage = () => {
         }
       ]
     },
+    experimental_throttle: 200,
   });
 
 
@@ -257,7 +258,6 @@ const ChatPage = () => {
   }, [activeKey]);
   */
 
-
   // ==================== Event ====================
   const handleSenderChange = (v) => {
     handleInputChange({
@@ -275,6 +275,7 @@ const ChatPage = () => {
         value: nextContent,
       }
     });
+
     handleInputChange({
       target: {
         value: ''
@@ -291,7 +292,7 @@ const ChatPage = () => {
     handleSubmit({
       target: {
         value: info?.data?.description || '',
-      }
+      },
     });
   };
   const onAddConversation = () => {
@@ -339,14 +340,17 @@ const ChatPage = () => {
       />
     </Space>
   );
-  const items = messages.map(({ id, content, status, role }) => ({
-    key: id,
-    loading: !content,
-    role: role === 'user' ? 'local' : 'ai',
-    content: <MemoizedMarkdown id={id} content={content} />,
-  }));
+  const items = messages.map(({ id, content, status, role, parts }) => {
+    const _content = content || parts?.find(item => item.toolInvocation)?.toolInvocation?.result?.content?.[0]?.text;
+    return {
+      key: id,
+      loading: !_content && isLoading,
+      role: role === 'user' ? 'local' : 'ai',
+      content: <MemoizedMarkdown id={id} content={_content || ''} />,
+    }
+  });
 
-  console.log(111122, messages, items);
+  console.log(111122, messages, items, isLoading);
 
 
   const attachmentsNode = (
@@ -390,7 +394,7 @@ const ChatPage = () => {
         draggable={false}
         alt="logo"
       />
-      <span>X X X</span>
+      <span>Logo</span>
     </div>
   );
 
@@ -437,6 +441,7 @@ const ChatPage = () => {
         <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
         <Sender
+          ref={senderRef}
           value={input}
           header={senderHeader}
           onSubmit={onSubmit}
