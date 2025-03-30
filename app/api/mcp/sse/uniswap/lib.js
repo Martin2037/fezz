@@ -2,7 +2,7 @@ import {chainIdToMoralis} from "@/app/const/server";
 import {getTokensMetadata} from "@/app/api/mcp/sse/moralis/lib";
 import ky from "ky";
 
-export async function getRoute(dstTokenAddress, chainId, amount) {
+export async function getRoute(walletAddress, dstTokenAddress, chainId, amount) {
     try {
         let inDecimal = "18", outDecimal
         const srcTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
@@ -35,22 +35,22 @@ export async function getRoute(dstTokenAddress, chainId, amount) {
 
         const priceRoute = route.priceRoute
         console.log(priceRoute)
-        // const tx = await ky.post(`https://api.paraswap.io/transactions/${chainId}`, {
-        //     json: {
-        //         srcToken: priceRoute.srcToken,
-        //         srcDecimals: inDecimal,
-        //         destToken: priceRoute.destToken,
-        //         destDecimals: outDecimal,
-        //         srcAmount: priceRoute.srcAmount,
-        //         destAmount: priceRoute.destAmount,
-        //         priceRoute: priceRoute,
-        //         userAddress: walletAddress,
-        //         txOrigin: walletAddress,
-        //         receiver: walletAddress,
-        //     },
-        // }).json()
-        // console.log('tx', tx)
-        return priceRoute
+        const tx = await ky.post(`https://api.paraswap.io/transactions/${chainId}`, {
+            json: {
+                srcToken: priceRoute.srcToken,
+                srcDecimals: inDecimal,
+                destToken: priceRoute.destToken,
+                destDecimals: outDecimal,
+                srcAmount: priceRoute.srcAmount,
+                destAmount: priceRoute.destAmount,
+                priceRoute: priceRoute,
+                userAddress: walletAddress,
+                txOrigin: walletAddress,
+                receiver: walletAddress,
+            },
+        }).json()
+        console.log('tx', tx)
+        return tx
     } catch (e) {
         console.log(e)
     }

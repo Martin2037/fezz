@@ -20,13 +20,14 @@ server.tool(
     "swap",
     "Swap cryptocurrency tokens across multiple blockchain networks with real-time rates and optimal routing. This tool enables seamless token exchanges between Ethereum, BSC, Base, and Arbitrum networks, supporting both native coins (ETH, BNB) and any ERC-20/BEP-20 tokens. The source token always be native token, so don't ask user to provide it.",
     {
+        walletAddress: z.string().length(42).describe('The user wallet address that will be used to perform the swap [if you dont know, you must ask user to provide!]'),
         // srcTokenAddress: z.string().length(42).describe('The source token address that user want to trade, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee [if you dont know, you must ask user to provide! Use context to get address such as the last tool result]'),
         dstTokenAddress: z.string().length(42).describe('The token address that user want to trade[if you dont know, you must ask user to provide! Use context to get address such as the last tool result.]'),
         chainId: z.enum(["1", "56", "8453", "42161"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base), 42161(Arbitrum) [if you dont know, you must ask user to provide!]"),
         amount: z.number().gt(0).describe('The token amount that user wants to trade [if you dont know, you must ask user to provide!]'),
     },
-    async ({dstTokenAddress, chainId="1", amount=1}) => {
-        const data = await getRoute(dstTokenAddress, chainId, amount)
+    async ({walletAddress, dstTokenAddress, chainId="1", amount=1}) => {
+        const data = await getRoute(walletAddress, dstTokenAddress, chainId, amount)
 
         return {
             content: [
