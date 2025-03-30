@@ -245,9 +245,6 @@ const ChatPage = () => {
     }
   });
 
-  console.log()
-
-
   // ==================== Runtime ====================
   /*const [agent] = useXAgent({
     request: async ({ message }, { onSuccess }) => {
@@ -440,6 +437,14 @@ const ChatPage = () => {
           roles={roles}
           className={styles.messages}
         />
+        <style>
+          {
+            `.ant-bubble-start {
+              justify-content: center;
+            }
+            `
+          }
+        </style>
         {/* 🌟 提示词 */}
         <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
