@@ -24,6 +24,8 @@ import {
   ReadOutlined,
   ShareAltOutlined,
   SmileOutlined,
+  LoadingOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { Badge, Button, Space } from 'antd';
 import { mcpServers } from '../const/mcps';
@@ -246,22 +248,6 @@ const ChatPage = () => {
     }
   });
 
-  // ==================== Runtime ====================
-  /*const [agent] = useXAgent({
-    request: async ({ message }, { onSuccess }) => {
-      onSuccess(`Mock success return. You said: ${message}`);
-    },
-  });
-  const { onRequest, messages, setMessages } = useXChat({
-    agent,
-  });
-  useEffect(() => {
-    if (activeKey !== undefined) {
-      setMessages([]);
-    }
-  }, [activeKey]);
-  */
-
   // ==================== Event ====================
   const handleSenderChange = (v) => {
     handleInputChange({
@@ -277,7 +263,7 @@ const ChatPage = () => {
     handleSubmit({
       target: {
         value: nextContent,
-      }
+      },
     });
 
     handleInputChange({
@@ -290,10 +276,10 @@ const ChatPage = () => {
     // onRequest(info.data.description);
     const promptText = info?.data?.description || '';
     if (!promptText) return;
-    
+
     handleSubmit({
       target: {
-        value: info?.data?.description || '',
+        value: promptText,
       },
     });
     // 不再需要在此处调用 handleInputChange，因为 handleSubmit 会处理状态更新
@@ -344,12 +330,39 @@ const ChatPage = () => {
     </Space>
   );
   const items = messages.map(({ id, content, status, role, parts }) => {
-    const _content = content || parts?.find(item => item.toolInvocation)?.toolInvocation?.result?.content?.[0]?.text;
+    const tools = parts?.filter(item => item?.toolInvocation?.toolName);
+
     return {
       key: id,
-      loading: !_content && isLoading,
+      loading: !content && isLoading,
       role: role === 'user' ? 'local' : 'ai',
-      content: <MemoizedMarkdown id={id} content={_content || ''} />,
+      content: (
+        <>
+          {
+            tools?.length > 0 && (
+              <ul class="space-y-4 w-64 p-2 bg-white rounded-lg shadow">
+                {
+                  tools.map((item, index) => {
+                    return (
+                      <li class="flex justify-between items-center">
+                        <span class="text-gray-700 font-medium">MCP:&nbsp;&nbsp;{item.toolInvocation?.toolName}</span>
+                        <div class="flex items-center">
+                          {
+                            item.toolInvocation?.result ? (
+                              <CheckOutlined style={{ color: 'green' }} />
+                            ) : <LoadingOutlined />
+                          }
+                        </div>
+                      </li>
+                    )
+                  })
+                }
+              </ul>
+            )
+          }
+          <MemoizedMarkdown id={id} content={content || ''} />
+        </>
+      ),
     }
   });
 
@@ -440,14 +453,7 @@ const ChatPage = () => {
           roles={roles}
           className={styles.messages}
         />
-        <style>
-          {
-            `.ant-bubble-start {
-              justify-content: center;
-            }
-            `
-          }
-        </style>
+
         {/* 🌟 提示词 */}
         <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
