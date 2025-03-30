@@ -3,12 +3,7 @@ import { streamText, experimental_createMCPClient } from 'ai';
 
 export const maxDuration = 30;
 
-const initMcpList = [
-  {
-    name: 'current_time',
-    url: 'https://router.mcp.so/sse/a7t8bhm8tnz4gh'
-  }
-];
+const initMcpList = [];
 
 export async function POST(req) {
   const { messages, mcp_list = initMcpList } = await req.json();
