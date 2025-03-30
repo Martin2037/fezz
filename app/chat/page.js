@@ -218,8 +218,7 @@ import { useChat } from '@ai-sdk/react';
 import { MemoizedMarkdown } from '@/components/memoized-markdown';
 import Thinking from '@/components/chat-thinking';
 
-
-const Independent = () => {
+const ChatPage = () => {
   // ==================== Style ====================
   const { styles } = useStyle();
 
@@ -230,8 +229,20 @@ const Independent = () => {
   const [activeKey, setActiveKey] = React.useState(defaultConversationsItems[0].key);
   const [attachedFiles, setAttachedFiles] = React.useState([]);
 
+  // new ai
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    body: { mcp_list: [
+        {
+          name: 'current_time',
+          url: 'http://localhost:3071/api/mcp/sse/goplus'
+        }
+      ]
+    },
+  });
+
+
   // ==================== Runtime ====================
-  const [agent] = useXAgent({
+  /*const [agent] = useXAgent({
     request: async ({ message }, { onSuccess }) => {
       onSuccess(`Mock success return. You said: ${message}`);
     },
@@ -244,17 +255,44 @@ const Independent = () => {
       setMessages([]);
     }
   }, [activeKey]);
+  */
 
-  console.log(111122, messages);
 
   // ==================== Event ====================
+  const handleSenderChange = (v) => {
+    handleInputChange({
+      target: {
+        value: v
+      }
+    });
+  }
   const onSubmit = (nextContent) => {
     if (!nextContent) return;
-    onRequest(nextContent);
-    setContent('');
+    // onRequest(nextContent);
+    // setContent('');
+    handleSubmit({
+      target: {
+        value: nextContent,
+      }
+    });
+    handleInputChange({
+      target: {
+        value: ''
+      }
+    });
   };
   const onPromptsItemClick = (info) => {
-    onRequest(info.data.description);
+    // onRequest(info.data.description);
+    handleInputChange({
+      target: {
+        value: info?.data?.description || '',
+      }
+    });
+    handleSubmit({
+      target: {
+        value: info?.data?.description || '',
+      }
+    });
   };
   const onAddConversation = () => {
     setConversationsItems([
@@ -278,7 +316,7 @@ const Independent = () => {
         variant="borderless"
         icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
         title="Hello, I'm Web3 智能对话平台"
-        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
+        description="Base on XXX, AGI product interface solution, create a better intelligent vision~"
         /*extra={
           <Space>
             <Button icon={<ShareAltOutlined />} />
@@ -301,12 +339,16 @@ const Independent = () => {
       />
     </Space>
   );
-  const items = messages.map(({ id, message, status }) => ({
+  const items = messages.map(({ id, content, status, role }) => ({
     key: id,
-    loading: status === 'loading',
-    role: status === 'local' ? 'local' : 'ai',
-    content: message,
+    loading: !content,
+    role: role === 'user' ? 'local' : 'ai',
+    content: <MemoizedMarkdown id={id} content={content} />,
   }));
+
+  console.log(111122, messages, items);
+
+
   const attachmentsNode = (
     <Badge dot={attachedFiles.length > 0 && !headerOpen}>
       <Button type="text" icon={<PaperClipOutlined />} onClick={() => setHeaderOpen(!headerOpen)} />
@@ -348,7 +390,7 @@ const Independent = () => {
         draggable={false}
         alt="logo"
       />
-      <span>Ant Design X</span>
+      <span>X X X</span>
     </div>
   );
 
@@ -395,88 +437,16 @@ const Independent = () => {
         <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
         <Sender
-          value={content}
+          value={input}
           header={senderHeader}
           onSubmit={onSubmit}
-          onChange={setContent}
+          onChange={handleSenderChange}
           prefix={attachmentsNode}
-          loading={agent.isRequesting()}
+          loading={false/*agent.isRequesting()*/}
           className={styles.sender}
         />
       </div>
     </div>
   );
 };
-export default Independent;
-
-
-export  function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    body: { mcp_list: [
-        {
-          name: 'current_time',
-          url: 'http://localhost:3071/api/mcp/sse/goplus'
-        }
-      ]
-    },
-  });
-
-  console.log('---AImessages---', messages);
-
-  return (
-    <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-      <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 mb-50">
-        {messages.map(message => (
-          <div key={message.id} className="whitespace-pre-wrap">
-            {/* <div className="flex justify-items-end text-right">
-                {message.role === 'user' ? 'User: ' : 'AI: '}
-              </div> */}
-            {
-              message.role === 'user' && (
-                <div className="w-full mx-auto max-w-3xl px-4 group/message" data-role="user">
-                  <div className="flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:w-fit">
-                    <div className="flex flex-col gap-4 w-full">
-                      <div className="flex flex-row gap-2 items-start">
-                        <div className="flex flex-col gap-4 bg-primary text-primary-foreground px-3 py-2 rounded-xl">
-                          <p>{message.content}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-            {
-              message.role !== 'user' && (
-                <div className="w-full mx-auto max-w-3xl px-4 group/message" data-role="assistant">
-                  <div className="flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:w-fit">
-                    <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-                      <div className="translate-y-px">
-                        AI
-                      </div>
-                    </div>
-                    <div class="flex flex-col gap-4 w-full justify-center">
-                      <Thinking message={message} />
-                      <MemoizedMarkdown id={message.id} content={message.content} />
-                      {/* <Tool message={message} /> */}
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-          </div>
-        ))}
-
-      </div>
-      <form onSubmit={handleSubmit}>
-        <input
-          className="fixed bottom-10 left-10 right-10 flex border border-input px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700"
-          value={input}
-          placeholder="Say something..."
-          onChange={handleInputChange}
-        />
-        <div className="fixed bottom-0 bg-white h-9 w-full left-0 right-0"/>
-      </form>
-    </div>
-  );
-}
+export default ChatPage;
