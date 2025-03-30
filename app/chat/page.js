@@ -345,12 +345,10 @@ const ChatPage = () => {
                   tools.map((item, index) => {
                     return (
                       <li class="flex justify-between items-center">
-                        <span class="text-gray-700 font-medium">MCP:&nbsp;&nbsp;{item.toolInvocation?.toolName}</span>
+                        <span class="text-gray-700 font-medium">调用MCP:&nbsp;&nbsp;{item.toolInvocation?.toolName}</span>
                         <div class="flex items-center">
                           {
-                            item.toolInvocation?.result ? (
-                              <CheckOutlined style={{ color: 'green' }} />
-                            ) : <LoadingOutlined />
+                            item.toolInvocation?.result ? <CheckOutlined style={{ color: 'green' }} /> : <LoadingOutlined />
                           }
                         </div>
                       </li>
