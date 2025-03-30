@@ -2,25 +2,26 @@ import {chainIdToMoralis} from "@/app/const/server";
 import {getTokensMetadata} from "@/app/api/mcp/sse/moralis/lib";
 import ky from "ky";
 
-export async function getRoute(srcTokenAddress, dstTokenAddress, chainId, amount) {
+export async function getRoute(dstTokenAddress, chainId, amount) {
     try {
-        let inDecimal, outDecimal
+        let inDecimal = "18", outDecimal
+        const srcTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
-        if (srcTokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-            inDecimal = "18"
-            const tokenInfo = await getTokensMetadata([dstTokenAddress], chainIdToMoralis[chainId])
+        // if (srcTokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        //     inDecimal = "18"
+        //     const tokenInfo = await getTokensMetadata([dstTokenAddress], chainIdToMoralis[chainId])
+        //     outDecimal = tokenInfo[0].decimals
+        // }
+        // if (dstTokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        //     outDecimal = "18"
+        //     const tokenInfo = await getTokensMetadata([srcTokenAddress], chainIdToMoralis[chainId])
+        //     inDecimal = tokenInfo[0].decimals
+        // }
+        // if (srcTokenAddress.toLowerCase() !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" && dstTokenAddress.toLowerCase() !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            const tokenInfo = await getTokensMetadata([dstTokenAddress.toLowerCase()], chainIdToMoralis[chainId])
             outDecimal = tokenInfo[0].decimals
-        }
-        if (dstTokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-            outDecimal = "18"
-            const tokenInfo = await getTokensMetadata([srcTokenAddress], chainIdToMoralis[chainId])
-            inDecimal = tokenInfo[0].decimals
-        }
-        if (srcTokenAddress.toLowerCase() !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" && dstTokenAddress.toLowerCase() !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-            const tokenInfo = await getTokensMetadata([srcTokenAddress.toLowerCase(), dstTokenAddress.toLowerCase()], chainIdToMoralis[chainId])
-            inDecimal = tokenInfo[0].decimals
-            outDecimal = tokenInfo[1].decimals
-        }
+            // outDecimal = tokenInfo[1].decimals
+        // }
         const route = await ky.get('https://api.paraswap.io/prices', {
             searchParams: {
                 srcToken: srcTokenAddress,
