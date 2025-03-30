@@ -1,9 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { 
-    NextSSEServerTransport, 
-    createExpressResponse, 
-    createExpressRequest 
+import {
+    NextSSEServerTransport,
+    createExpressResponse,
+    createExpressRequest
 } from "../../transport.js";
+import {z} from "zod";
+import {getRoute} from "@/app/api/mcp/sse/uniswap/lib";
 
 // 创建一个新的 MCP 服务器实例
 const server = new McpServer({
@@ -15,18 +17,24 @@ const server = new McpServer({
 
 // 添加示例工具
 server.tool(
-    "ping",
-    "Responds with pong",
-    {},
-    async (params) => {
-        console.log(`Received ping with params: ${JSON.stringify(params)}`);
+    "swap",
+    "Swap coins through UniswapV3",
+    {
+        walletAddress: z.string().length(42).describe('The user wallet address that trade token'),
+        inTokenAddress: z.string().length(42).describe('The token address that user want to trade out'),
+        outTokenAddress: z.string().length(42).describe('The token address that user want to trade in'),
+        chainId: z.enum(["1", "56", "8453"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base)"),
+        amountIn: z.number().gt(0).describe('The token amount that user trade out'),
+    },
+    async ({walletAddress='0xd1cc053f804cdc7bdf4f7cf40296661098126fbf', inTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', outTokenAddress = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', chainId="1", amountIn=1}) => {
+        const data = await getRoute(walletAddress, inTokenAddress, outTokenAddress, chainId, amountIn)
+
         return {
             content: [
                 {
-                    type: "text",
-                    text: "pong"
-                }
-            ]
+                    type: "object",
+                    text: data,
+                }]
         };
     }
 );
@@ -43,16 +51,16 @@ export async function GET(request) {
                 try {
                     // 创建模拟的响应对象
                     const expressRes = createExpressResponse(controller);
-                    
+
                     // 创建 SSE 传输层
                     transport = new NextSSEServerTransport("/api/mcp/sse/uniswap", expressRes);
-                    
+
                     // 连接到 MCP 服务器
                     server.connect(transport).catch(error => {
                         console.error("Error connecting to MCP server:", error);
                         controller.error(new Error(`Failed to connect to MCP server: ${error.message}`));
                     });
-                    
+
                     console.log("Uniswap MCP Server running on SSE");
                 } catch (error) {
                     console.error("Error starting SSE:", error);
@@ -97,16 +105,16 @@ export async function POST(request) {
             status: 200,
             statusText: "OK",
             json: (data) => {
-                return Response.json(data, { 
-                    status: nextRes.status, 
-                    statusText: nextRes.statusText 
+                return Response.json(data, {
+                    status: nextRes.status,
+                    statusText: nextRes.statusText
                 });
             }
         };
 
         // 处理消息
         await transport.handlePostMessage(expressReq, nextRes);
-        
+
         // 返回响应
         return nextRes.json({});
     } catch (error) {
