@@ -25,6 +25,8 @@ import {
   SmileOutlined,
 } from '@ant-design/icons';
 import { Badge, Button, Space } from 'antd';
+import { mcpServers } from '../const/mcps';
+
 const renderTitle = (icon, title) => (
   <Space align="start">
     {icon}
@@ -229,30 +231,21 @@ const ChatPage = () => {
   // new ai
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     id: activeKey,
-    body: { mcp_list: [
-        {
-          name: 'goplus',
-          url: 'http://localhost:3071/api/mcp/sse/goplus'
-        },
-        {
-          name: 'bytehunter',
-          url: 'http://localhost:3071/api/mcp/sse/bytehunter'
-        },
-        {
-          name: 'moralis',
-          url: 'http://localhost:3071/api/mcp/sse/moralis'
-        },
-        {
-          name: 'uniswap',
-          url: 'http://localhost:3071/api/mcp/sse/uniswap'
+    body: {
+      mcp_list: mcpServers.map(item => {
+        return {
+          name: item.name,
+          url: window.location.origin + item.localUrl, // 'http://localhost:3071/api/mcp/sse/goplus'
         }
-      ]
+      })
     },
     experimental_throttle: 200,
     onFinish: (message) => {
       console.log(message);
     }
   });
+
+  console.log()
 
 
   // ==================== Runtime ====================
