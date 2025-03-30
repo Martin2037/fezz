@@ -20,13 +20,13 @@ server.tool(
     "swap",
     "Swap crypto coins",
     {
-        inTokenAddress: z.string().length(42).describe('The token address that user want to trade out, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
-        outTokenAddress: z.string().length(42).describe('The token address that user want to trade in, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
-        chainId: z.enum(["1", "56", "8453", "42161"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base), 42161(Arbitrum)"),
-        amountIn: z.number().gt(0).describe('The token amount that user trade out'),
+        srcTokenAddress: z.string().length(42).describe('The source token address that user want to trade, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee [if you dont know, you must ask user to provide!]'),
+        dstTokenAddress: z.string().length(42).describe('The destination token address that user want to trade, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee [if you dont know, you must ask user to provide!]'),
+        chainId: z.enum(["1", "56", "8453", "42161"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base), 42161(Arbitrum) [if you dont know, you must ask user to provide!]"),
+        amount: z.number().gt(0).describe('The token amount that user wants to trade [if you dont know, you must ask user to provide!]'),
     },
-    async ({inTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', outTokenAddress = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', chainId="1", amountIn=1}) => {
-        const data = await getRoute(inTokenAddress, outTokenAddress, chainId, amountIn)
+    async ({srcTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', dstTokenAddress = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', chainId="1", amount=1}) => {
+        const data = await getRoute(srcTokenAddress, dstTokenAddress, chainId, amount)
 
         return {
             content: [
