@@ -71,7 +71,7 @@ export default function Plugins() {
   const setDeleteTarget = (plugin) => {
     setModalObj({
       title: '删除' + plugin.name,
-      content: '确认删除嘛',
+      content: '确认删除嘛？',
     });
   };
 
@@ -137,7 +137,7 @@ export default function Plugins() {
                 编辑
               </button>
               <button
-                onClick={() => setDeleteTarget(plugin.id)}
+                onClick={() => setDeleteTarget(plugin)}
                 className="text-red-600 hover:text-red-900"
               >
                 删除
