@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Attachments,
   Bubble,
@@ -389,12 +390,14 @@ const ChatPage = () => {
   );
   const logoNode = (
     <div className={styles.logo}>
-      <img
-        src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-        draggable={false}
-        alt="logo"
-      />
-      <span>Logo</span>
+      <Link href="/">
+        <img
+          src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
+          draggable={false}
+          alt="logo"
+        />
+        <span>Logo</span>
+      </Link>
     </div>
   );
 
