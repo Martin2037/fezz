@@ -241,6 +241,9 @@ export default function Home() {
             <Button size="lg" variant="outline">
               了解更多
             </Button>
+            <Button size="lg" variant="outline">
+              <Link href="/plugins">管理插件</Link>
+            </Button>
           </div>
 
           {/* React Flow 流程图 - 完全静态 */}
