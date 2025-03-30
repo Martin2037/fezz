@@ -43,7 +43,7 @@ export async function getRoute(walletAddress, dstTokenAddress, chainId, amount) 
                 destDecimals: outDecimal,
                 srcAmount: priceRoute.srcAmount,
                 // destAmount: priceRoute.destAmount,
-                slippage: 500,
+                slippage: 250,
                 priceRoute: priceRoute,
                 userAddress: walletAddress,
                 txOrigin: walletAddress,
