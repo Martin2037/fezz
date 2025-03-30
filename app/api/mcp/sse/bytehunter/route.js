@@ -34,8 +34,8 @@ server.tool(
     "analyze-transaction-if-scam",
     "analyze a transaction to determine if it is a scam",
     {
-        transaction_hash: z.string().describe("transaction hash"),
-        chain_id: z.string().describe("chain id")
+        transaction_hash: z.string().describe("transaction hash [if you dont know, you must ask user to provide]"),
+        chain_id: z.string().describe("chain id [if you dont know, you must ask user to provide]")
     },
     async (params) => {
         try {

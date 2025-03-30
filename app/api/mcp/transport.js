@@ -65,7 +65,12 @@ export class NextSSEServerTransport {
 
     async close() {
         if (this.sseResponse) {
-            this.res.close();
+            try {
+                this.res.close();
+            } catch (error) {
+                console.warn("关闭 SSE 响应时出错:", error.message);
+                // 忽略已关闭的错误
+            }
             this.sseResponse = undefined;
             if (this.onclose) {
                 this.onclose();
@@ -156,12 +161,22 @@ export class NextSSEServerTransport {
  * @returns {Object} 模拟的 Express 响应对象
  */
 export function createExpressResponse(controller) {
+    let isClosed = false;
     return {
         // 向 SSE 流写入数据
-        enqueue: (data) => controller.enqueue(data),
+        enqueue: (data) => {
+            if (!isClosed) {
+                controller.enqueue(data);
+            }
+        },
         
         // 关闭 SSE 流
-        close: () => controller.close(),
+        close: () => {
+            if (!isClosed) {
+                isClosed = true;
+                controller.close();
+            }
+        },
         
         // 存储状态码和状态文本
         status: 200,

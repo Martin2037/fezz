@@ -41,9 +41,7 @@ const useStyle = createStyles(({ token, css }) => {
   return {
     layout: css`
       width: 100%;
-      min-width: 1000px;
-      height: 722px;
-      border-radius: ${token.borderRadius}px;
+      height: 100vh;
       display: flex;
       background: ${token.colorBgContainer};
       font-family: AlibabaPuHuiTi, ${token.fontFamily}, sans-serif;
@@ -67,7 +65,6 @@ const useStyle = createStyles(({ token, css }) => {
     chat: css`
       height: 100%;
       width: 100%;
-      max-width: 700px;
       margin: 0 auto;
       box-sizing: border-box;
       display: flex;
@@ -234,12 +231,27 @@ const ChatPage = () => {
     id: activeKey,
     body: { mcp_list: [
         {
-          name: 'current_time',
+          name: 'goplus',
           url: 'http://localhost:3071/api/mcp/sse/goplus'
+        },
+        {
+          name: 'bytehunter',
+          url: 'http://localhost:3071/api/mcp/sse/bytehunter'
+        },
+        {
+          name: 'moralis',
+          url: 'http://localhost:3071/api/mcp/sse/moralis'
+        },
+        {
+          name: 'uniswap',
+          url: 'http://localhost:3071/api/mcp/sse/uniswap'
         }
       ]
     },
     experimental_throttle: 200,
+    onFinish: (message) => {
+      console.log(message);
+    }
   });
 
 
@@ -285,16 +297,15 @@ const ChatPage = () => {
   };
   const onPromptsItemClick = (info) => {
     // onRequest(info.data.description);
-    handleInputChange({
-      target: {
-        value: info?.data?.description || '',
-      }
-    });
+    const promptText = info?.data?.description || '';
+    if (!promptText) return;
+    
     handleSubmit({
       target: {
         value: info?.data?.description || '',
       },
     });
+    // 不再需要在此处调用 handleInputChange，因为 handleSubmit 会处理状态更新
   };
   const onAddConversation = () => {
     setConversationsItems([
@@ -350,8 +361,6 @@ const ChatPage = () => {
       content: <MemoizedMarkdown id={id} content={_content || ''} />,
     }
   });
-
-  console.log(111122, messages, items, isLoading);
 
 
   const attachmentsNode = (

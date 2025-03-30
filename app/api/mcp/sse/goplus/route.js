@@ -20,8 +20,8 @@ server.tool(
     "token-security-api",
     "Scan/Detect crypto token security, any token address will scan",
     {
-        token_address: z.string().describe("The address of the token to scan"),
-        chain_id: z.enum(["1", "56", "137", "8453"]).describe("Chain ID, supported values: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base)")
+        token_address: z.string().describe("The address of the token to scan, [if you dont know, you must ask user to provide]"),
+        chain_id: z.enum(["1", "56", "137", "8453"]).describe("Chain ID, supported values: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base) [if you dont know, you must ask user to provide]")
     },
     async ({token_address, chain_id}) => {
         console.log(token_address, chain_id);
@@ -121,7 +121,7 @@ server.tool(
     "address-security-api",
     "Scan/Detect address security, any address will scan",
     {
-        address: z.string().describe("要检测的钱包或合约地址")
+        address: z.string().describe("address which you want to scan [if you dont know, you must ask user to provide!]")
     },
     async ({address}) => {
         const data = await AddressSecurity(address);
@@ -209,7 +209,7 @@ server.tool(
     "phishing-site-detect-api",
     "Scan/Detect website security, any url will scan",
     {
-        url: z.string().describe("要检测的URL地址或域名")
+        url: z.string().describe("要检测的URL地址或域名 [if you dont know, you must ask user to provide]")
     },
     async ({url}) => {
         const data = await PhishingSiteDetect(url);
@@ -325,10 +325,16 @@ export async function GET(request) {
             },
             cancel() {
                 if (transport) {
-                    transport.close();
-                    transport = null;
+                    try {
+                        transport.close();
+                    } catch (error) {
+                        console.warn("关闭 SSE 连接时出错:", error.message);
+                        // 忽略已关闭的错误
+                    } finally {
+                        transport = null;
+                        console.log("SSE connection closed");
+                    }
                 }
-                console.log("SSE connection closed");
             }
         }),
         {

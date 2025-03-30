@@ -20,7 +20,7 @@ server.tool(
     "trending_tokens",
     "Get trending tokens on a specific blockchain network & chain id",
     {
-        chain_id: z.enum(["1", "56", "8453"]).describe("Chain ID, supported values: 1(Ethereum), 56(BSC), 8453(Base)")
+        chain_id: z.enum(["1", "56", "8453"]).describe("Chain ID, supported values: 1(Ethereum), 56(BSC), 8453(Base) [if you dont know, you must ask user to provide]")
     },
     async (params) => {
         try {
@@ -118,8 +118,8 @@ server.tool(
     "wallet_pnl",
     "Get wallet profit/pnl summary",
     {
-        address: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe("钱包地址，以0x开头的42位十六进制字符串"),
-        chain_id: z.enum(["1", "56", "137", "8453"]).describe("区块链ID，支持的值: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base)")
+        address: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe("钱包地址，以0x开头的42位十六进制字符串 [if you dont know, you must ask user to provide]"),
+        chain_id: z.enum(["1", "56", "137", "8453"]).describe("区块链ID，支持的值: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base) [if you dont know, you must ask user to provide]")
     },
     async (params) => {
         try {
@@ -172,8 +172,8 @@ server.tool(
     "tokens_metadata",
     "Get metadata for multiple ERC20 tokens",
     {
-        addresses: z.array(z.string().regex(/^0x[a-fA-F0-9]{40}$/)).min(1).max(20).describe("代币合约地址数组，每个地址必须是以0x开头的42位十六进制字符串"),
-        chain_id: z.enum(["1", "56", "137", "8453"]).describe("区块链ID，支持的值: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base)")
+        addresses: z.array(z.string().regex(/^0x[a-fA-F0-9]{40}$/)).min(1).max(20).describe("代币合约地址数组，每个地址必须是以0x开头的42位十六进制字符串 [if you dont know, you must ask user to provide]"),
+        chain_id: z.enum(["1", "56", "137", "8453"]).describe("区块链ID，支持的值: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base) [if you dont know, you must ask user to provide]")
     },
     async (params) => {
         try {
