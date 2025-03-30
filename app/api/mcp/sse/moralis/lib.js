@@ -115,3 +115,31 @@ export async function getWalletPnlSummary(address, chain = 'eth') {
         return { success: false, error: error.message };
     }
 }
+
+/**
+ * 获取钱包所有代币列表
+ * @param {string} address - 钱包地址
+ * @param {string} chain - 区块链网络，如 'eth', 'bsc', 'polygon', 'base' 等
+ * @param {number} limit - 结果数量限制
+ * @returns {Promise<Object>} - 返回钱包代币数据
+ */
+export async function getWalletTokens(address, chain = 'eth', limit = 100) {
+    try {
+        const response = await ky.get(`https://deep-index.moralis.io/api/v2.2/wallets/${address}/tokens`, {
+            searchParams: {
+                chain: chain,
+                limit: limit
+            },
+            headers: {
+                'accept': 'application/json',
+                'X-API-Key': process.env.MORALIS_API_KEY
+            }
+        });
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('获取钱包代币列表失败:', error);
+        return { success: false, error: error.message };
+    }
+}

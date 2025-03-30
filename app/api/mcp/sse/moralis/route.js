@@ -4,7 +4,7 @@ import {
     createExpressResponse, 
     createExpressRequest 
 } from "../../transport.js";
-import { getTrendingTokens, getWalletPnlSummary, searchTokens, getTokensMetadata } from "./lib.js";
+import { getTrendingTokens, getWalletPnlSummary, searchTokens, getTokensMetadata, getWalletTokens } from "./lib.js";
 import { z } from "zod";
 
 // 创建一个新的 MCP 服务器实例
@@ -242,6 +242,81 @@ server.tool(
     }
 );
 
+// 添加获取钱包所有代币工具
+server.tool(
+    "wallet_tokens",
+    "Get all tokens owned by a wallet address",
+    {
+        address: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe("钱包地址，以0x开头的42位十六进制字符串"),
+        chain_id: z.enum(["1", "56", "137", "8453"]).describe("区块链ID，支持的值: 1(Ethereum), 56(BSC), 137(Polygon), 8453(Base)"),
+        min_usd_value: z.number().optional().default(10).describe("代币最小美元价值，默认为10美元")
+    },
+    async (params) => {
+        try {
+            const chainIdMap = {
+                "1": "eth",
+                "56": "bsc",
+                "137": "polygon",
+                "8453": "base"
+            };
+            
+            const chain = chainIdMap[params.chain_id] || "eth";
+            const result = await getWalletTokens(params.address, chain, 50);
+            
+            // 如果结果包含错误信息则返回错误
+            if (result.success === false) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `获取钱包代币失败: ${result.error}`
+                        }
+                    ]
+                };
+            }
+            
+            const minUsdValue = params.min_usd_value || 10;
+            const filteredTokens = Array.isArray(result.result) 
+                ? result.result.filter(token => {
+                    const usdValue = parseFloat(token.usd_value || 0);
+                    return usdValue >= minUsdValue;
+                  })
+                : [];
+            
+            // 返回标准化的结果
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify({
+                            address: params.address,
+                            chain_id: params.chain_id,
+                            chain_name: chain,
+                            cursor: result.cursor,
+                            page: result.page,
+                            page_size: result.page_size,
+                            block_number: result.block_number,
+                            min_usd_value: minUsdValue,
+                            tokens: filteredTokens,
+                            total_tokens_count: result.result?.length || 0,
+                            filtered_tokens_count: filteredTokens.length,
+                        })
+                    }
+                ]
+            };
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `获取钱包代币失败: ${error.message}`
+                    }
+                ]
+            };
+        }
+    }
+);
+
 // 全局传输层实例，用于在 GET 和 POST 之间共享
 let transport = null;
 
@@ -271,7 +346,6 @@ export async function GET(request) {
                 }
             },
             cancel() {
-                // 当客户端断开连接时清理资源
                 if (transport) {
                     transport.close();
                     transport = null;
