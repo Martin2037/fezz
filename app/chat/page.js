@@ -64,7 +64,7 @@ export default function Chat() {
           placeholder="Say something..."
           onChange={handleInputChange}
         />
-        <div className="fixed bottom-0 bg-white h-10 w-full left-0 right-0"/>
+        <div className="fixed bottom-0 bg-white h-9 w-full left-0 right-0"/>
       </form>
     </div>
   );
