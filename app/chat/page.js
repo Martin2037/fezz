@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Attachments,
   Bubble,
@@ -23,8 +24,12 @@ import {
   ReadOutlined,
   ShareAltOutlined,
   SmileOutlined,
+  LoadingOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { Badge, Button, Space } from 'antd';
+import { mcpServers } from '../const/mcps';
+
 const renderTitle = (icon, title) => (
   <Space align="start">
     {icon}
@@ -228,47 +233,20 @@ const ChatPage = () => {
 
   // new ai
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    body: { mcp_list: [
-        {
-          name: 'goplus',
-          url: 'http://localhost:3071/api/mcp/sse/goplus'
-        },
-        {
-          name: 'bytehunter',
-          url: 'http://localhost:3071/api/mcp/sse/bytehunter'
-        },
-        {
-          name: 'moralis',
-          url: 'http://localhost:3071/api/mcp/sse/moralis'
-        },
-        {
-          name: 'uniswap',
-          url: 'http://localhost:3071/api/mcp/sse/uniswap'
+    id: activeKey,
+    body: {
+      mcp_list: mcpServers.map(item => {
+        return {
+          name: item.name,
+          url: window.location.origin + item.localUrl, // 'http://localhost:3071/api/mcp/sse/goplus'
         }
-      ]
+      })
     },
     experimental_throttle: 200,
     onFinish: (message) => {
       console.log(message);
     }
   });
-
-
-  // ==================== Runtime ====================
-  /*const [agent] = useXAgent({
-    request: async ({ message }, { onSuccess }) => {
-      onSuccess(`Mock success return. You said: ${message}`);
-    },
-  });
-  const { onRequest, messages, setMessages } = useXChat({
-    agent,
-  });
-  useEffect(() => {
-    if (activeKey !== undefined) {
-      setMessages([]);
-    }
-  }, [activeKey]);
-  */
 
   // ==================== Event ====================
   const handleSenderChange = (v) => {
@@ -285,7 +263,7 @@ const ChatPage = () => {
     handleSubmit({
       target: {
         value: nextContent,
-      }
+      },
     });
 
     handleInputChange({
@@ -298,10 +276,10 @@ const ChatPage = () => {
     // onRequest(info.data.description);
     const promptText = info?.data?.description || '';
     if (!promptText) return;
-    
+
     handleSubmit({
       target: {
-        value: info?.data?.description || '',
+        value: promptText,
       },
     });
     // 不再需要在此处调用 handleInputChange，因为 handleSubmit 会处理状态更新
@@ -352,12 +330,37 @@ const ChatPage = () => {
     </Space>
   );
   const items = messages.map(({ id, content, status, role, parts }) => {
-    const _content = content || parts?.find(item => item.toolInvocation)?.toolInvocation?.result?.content?.[0]?.text;
+    const tools = parts?.filter(item => item?.toolInvocation?.toolName);
+
     return {
       key: id,
-      loading: !_content && isLoading,
+      loading: !content && isLoading,
       role: role === 'user' ? 'local' : 'ai',
-      content: <MemoizedMarkdown id={id} content={_content || ''} />,
+      content: (
+        <>
+          {
+            tools?.length > 0 && (
+              <ul class="space-y-4 w-64 p-2 bg-white rounded-lg shadow">
+                {
+                  tools.map((item, index) => {
+                    return (
+                      <li class="flex justify-between items-center">
+                        <span class="text-gray-700 font-medium">调用MCP:&nbsp;&nbsp;{item.toolInvocation?.toolName}</span>
+                        <div class="flex items-center">
+                          {
+                            item.toolInvocation?.result ? <CheckOutlined style={{ color: 'green' }} /> : <LoadingOutlined />
+                          }
+                        </div>
+                      </li>
+                    )
+                  })
+                }
+              </ul>
+            )
+          }
+          <MemoizedMarkdown id={id} content={content || ''} />
+        </>
+      ),
     }
   });
 
@@ -398,12 +401,14 @@ const ChatPage = () => {
   );
   const logoNode = (
     <div className={styles.logo}>
-      <img
-        src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-        draggable={false}
-        alt="logo"
-      />
-      <span>Logo</span>
+      <Link href="/">
+        <img
+          src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
+          draggable={false}
+          alt="logo"
+        />
+        <span>Logo</span>
+      </Link>
     </div>
   );
 
@@ -446,6 +451,7 @@ const ChatPage = () => {
           roles={roles}
           className={styles.messages}
         />
+
         {/* 🌟 提示词 */}
         <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
