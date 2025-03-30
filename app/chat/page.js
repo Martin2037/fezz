@@ -248,6 +248,9 @@ const ChatPage = () => {
       ]
     },
     experimental_throttle: 200,
+    onFinish: (message) => {
+      console.log(message);
+    }
   });
 
 
@@ -357,8 +360,6 @@ const ChatPage = () => {
       content: <MemoizedMarkdown id={id} content={_content || ''} />,
     }
   });
-
-  console.log(111122, messages, items, isLoading);
 
 
   const attachmentsNode = (

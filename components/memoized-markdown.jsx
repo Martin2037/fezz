@@ -4,35 +4,41 @@ import Markdown from 'markdown-to-jsx';
 
 // 添加节流功能，控制重渲染频率
 function useThrottledValue(value, delay = 150) {
-  const [throttledValue, setThrottledValue] = useState(value);
+  // 确保输入是字符串
+  const safeValue = typeof value === 'string' ? value : String(value || '');
+  const [throttledValue, setThrottledValue] = useState(safeValue);
   
   useEffect(() => {
     // 如果内容很短（不到50个字符），不使用节流
-    if (value && value.length < 50) {
-      setThrottledValue(value);
+    if (safeValue && safeValue.length < 50) {
+      setThrottledValue(safeValue);
       return;
     }
     
     const handler = setTimeout(() => {
-      setThrottledValue(value);
+      setThrottledValue(safeValue);
     }, delay);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay]);
+  }, [safeValue, delay]);
 
   return throttledValue;
 }
 
 function parseMarkdownIntoBlocks(markdown) {
   if (!markdown) return [];
+  
+  // 确保输入是字符串类型
+  const markdownText = typeof markdown === 'string' ? markdown : String(markdown);
+  
   try {
-    const tokens = marked.lexer(markdown);
+    const tokens = marked.lexer(markdownText);
     return tokens.map(token => token.raw);
   } catch (e) {
     console.error('Error parsing markdown:', e);
-    return [markdown]; // 解析失败时返回原始内容
+    return [markdownText]; // 解析失败时返回转换后的内容
   }
 }
 
@@ -50,8 +56,12 @@ MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock';
 
 export const MemoizedMarkdown = memo(
   ({ content, id }) => {
+    // 确保 content 是字符串类型
+    const safeContent = content !== undefined && content !== null ? 
+      (typeof content === 'string' ? content : String(content)) : '';
+    
     // 使用节流值减少更新频率
-    const throttledContent = useThrottledValue(content);
+    const throttledContent = useThrottledValue(safeContent);
     
     // 缓存解析结果
     const blocks = useMemo(
@@ -74,14 +84,20 @@ export const MemoizedMarkdown = memo(
     // 如果ID不同，则始终重新渲染
     if (prevProps.id !== nextProps.id) return false;
     
+    // 转换为字符串进行比较
+    const prevContent = prevProps.content !== undefined && prevProps.content !== null ? 
+      String(prevProps.content) : '';
+    const nextContent = nextProps.content !== undefined && nextProps.content !== null ? 
+      String(nextProps.content) : '';
+    
     // 内容相同，无需重新渲染
-    if (prevProps.content === nextProps.content) return true;
+    if (prevContent === nextContent) return true;
     
     // 如果内容长度变化不大（少于10个字符），跳过渲染
     if (
-      prevProps.content && 
-      nextProps.content && 
-      Math.abs(prevProps.content.length - nextProps.content.length) < 10
+      prevContent && 
+      nextContent && 
+      Math.abs(prevContent.length - nextContent.length) < 10
     ) {
       return true;
     }
