@@ -40,7 +40,19 @@ async function analyzeToolCallResults(toolCalls, mcpClients) {
 }
 
 export async function POST(req) {
-  const { messages, mcp_list = initMcpList } = await req.json();
+  const { messages, mcp_list = initMcpList, userWalletAddress } = await req.json();
+  console.log('messages', messages, "++++++++++",userWalletAddress);
+
+  // 为用户消息添加钱包地址
+  const processedMessages = messages.map(message => {
+    if (message.role === 'user') {
+      return {
+        ...message,
+        content: `${message.content}${userWalletAddress ? `\n用户钱包地址: ${userWalletAddress}` : ''}`
+      };
+    }
+    return message;
+  });
 
   const mcpClients = await Promise.all(
     mcp_list.map(async (mcp) => {
@@ -78,7 +90,7 @@ export async function POST(req) {
     model: openai('gpt-4o-mini'),
     tools: tools,
     system: '你是一个专业的Web3助手，精通区块链、DeFi、NFT和加密货币领域。当你使用工具 & tools 获取数据时，你会详细解析结果并为用户提供深入的分析和见解返回content。你的回答应该既专业又易于理解，帮助用户更好地理解Web3生态系统。',
-    messages: messages,
+    messages: processedMessages,
     temperature: 0,
     onChunk: ({ chunk }) => {
       // 收集工具调用信息

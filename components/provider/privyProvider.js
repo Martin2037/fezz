@@ -1,6 +1,25 @@
 'use client';
 
 import {PrivyProvider} from '@privy-io/react-auth';
+import {base, bsc ,arbitrum, optimism, polygon} from 'viem/chains';
+import {defineChain} from 'viem';
+
+
+const CusBNBChain = defineChain({
+    id: 56,
+    name: 'BNB Chain',
+    nativeCurrency: {
+        name: 'BNB',
+        symbol: 'BNB',
+        decimals: 18
+    },
+    rpcUrls: {
+        default: {
+            http: ['https://bsc.blockpi.network/v1/rpc/a8d3b85c45f5964fe74312f4b687d051a6d4026e'],
+            webSocket: ['wss://bsc-ws-node.nariox.org/']
+        }
+    }
+})
 
 export default function Providers({children}) {
     const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
@@ -16,6 +35,7 @@ export default function Providers({children}) {
                     theme: 'light',
                     accentColor: '#676FFF',
                 },
+                supportedChains: [base, CusBNBChain, arbitrum, optimism, polygon],
                 // Create embedded wallets for users who don't have a wallet
                 embeddedWallets: {
                     ethereum: {
