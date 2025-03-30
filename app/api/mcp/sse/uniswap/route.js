@@ -18,16 +18,15 @@ const server = new McpServer({
 // 添加示例工具
 server.tool(
     "swap",
-    "Swap coins through UniswapV3",
+    "Swap crypto coins",
     {
-        walletAddress: z.string().length(42).describe('The user wallet address that trade token'),
-        inTokenAddress: z.string().length(42).describe('The token address that user want to trade out'),
-        outTokenAddress: z.string().length(42).describe('The token address that user want to trade in'),
-        chainId: z.enum(["1", "56", "8453"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base)"),
+        inTokenAddress: z.string().length(42).describe('The token address that user want to trade out, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
+        outTokenAddress: z.string().length(42).describe('The token address that user want to trade in, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
+        chainId: z.enum(["1", "56", "8453", "42161"]).describe("链ID，支持的值: 1(以太坊), 56(BSC), 137(Polygon), 8453(Base), 42161(Arbitrum)"),
         amountIn: z.number().gt(0).describe('The token amount that user trade out'),
     },
-    async ({walletAddress='0xd1cc053f804cdc7bdf4f7cf40296661098126fbf', inTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', outTokenAddress = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', chainId="1", amountIn=1}) => {
-        const data = await getRoute(walletAddress, inTokenAddress, outTokenAddress, chainId, amountIn)
+    async ({inTokenAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', outTokenAddress = '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', chainId="1", amountIn=1}) => {
+        const data = await getRoute(inTokenAddress, outTokenAddress, chainId, amountIn)
 
         return {
             content: [
