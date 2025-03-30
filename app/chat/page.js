@@ -231,6 +231,7 @@ const ChatPage = () => {
 
   // new ai
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    id: activeKey,
     body: { mcp_list: [
         {
           name: 'current_time',
