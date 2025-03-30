@@ -232,7 +232,7 @@ const ChatPage = () => {
   const senderRef = useRef(null);
 
   // new ai
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, setInput, handleInputChange, handleSubmit, append, isLoading } = useChat({
     id: activeKey,
     body: {
       mcp_list: mcpServers.map(item => {
@@ -250,39 +250,27 @@ const ChatPage = () => {
 
   // ==================== Event ====================
   const handleSenderChange = (v) => {
-    handleInputChange({
-      target: {
-        value: v
-      }
-    });
+    setInput(v);
   }
   const onSubmit = (nextContent) => {
     if (!nextContent) return;
     // onRequest(nextContent);
     // setContent('');
-    handleSubmit({
-      target: {
-        value: nextContent,
-      },
+    append({
+      role: "user",
+      content: nextContent
     });
 
-    handleInputChange({
-      target: {
-        value: ''
-      }
-    });
+    setInput('')
   };
   const onPromptsItemClick = (info) => {
     // onRequest(info.data.description);
     const promptText = info?.data?.description || '';
     if (!promptText) return;
-
-    handleSubmit({
-      target: {
-        value: promptText,
-      },
+    append({
+      role: 'user',
+      content: promptText,
     });
-    // 不再需要在此处调用 handleInputChange，因为 handleSubmit 会处理状态更新
   };
   const onAddConversation = () => {
     setConversationsItems([
