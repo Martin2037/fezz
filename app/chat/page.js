@@ -31,6 +31,7 @@ import { useSendTransaction, useWallets } from '@privy-io/react-auth';
 import {ethers} from 'ethers';
 import ky from 'ky'; // 引入ky请求库
 import { mcpServers } from '../const/mcps';
+import { Player } from '@lottiefiles/react-lottie-player';
 
 const renderTitle = (icon, title) => (
   <Space align="start">
@@ -41,7 +42,7 @@ const renderTitle = (icon, title) => (
 const defaultConversationsItems = [
   {
     key: '0',
-    label: 'What is Ant Design X?',
+    label: 'Welcome',
   },
 ];
 const placeholderPromptsItems = [
@@ -53,21 +54,21 @@ const placeholderPromptsItems = [
           color: '#FF4D4F',
         }}
       />,
-      'Hot Topics',
+      'Informations',
     ),
-    description: 'What are you interested in?',
+    description: 'On-Chain News',
     children: [
       {
         key: '1-1',
-        description: `What's new in X?`,
+        description: `Trending tokens on BSC`,
       },
       {
         key: '1-2',
-        description: `What's AGI?`,
+        description: `Check scams of addresses`,
       },
       {
         key: '1-3',
-        description: `Where is the doc?`,
+        description: `Detect scams of websites`,
       },
     ],
   },
@@ -79,24 +80,13 @@ const placeholderPromptsItems = [
           color: '#1890FF',
         }}
       />,
-      'Design Guide',
+      'Actions',
     ),
-    description: 'How to design a good product?',
+    description: 'Do whatever you want with your wallet',
     children: [
       {
         key: '2-1',
-        icon: <HeartOutlined />,
-        description: `Know the well`,
-      },
-      {
-        key: '2-2',
-        icon: <SmileOutlined />,
-        description: `Set the AI role`,
-      },
-      {
-        key: '2-3',
-        icon: <CommentOutlined />,
-        description: `Express the feeling`,
+        description: `Swap tokens`,
       },
     ],
   },
@@ -104,7 +94,7 @@ const placeholderPromptsItems = [
 const senderPromptsItems = [
   {
     key: '1',
-    description: 'Hot Topics',
+    description: 'Informations',
     icon: (
       <FireOutlined
         style={{
@@ -224,7 +214,6 @@ const ChatPage = () => {
   const [swapMessageIds, setSwapMessageIds] = useState(new Set());
   // 存储激活状态的swapTool中的toolInvocation.result.content.text对象
   const [swapToolContent, setSwapToolContent] = useState(null);
-  const { sendTransaction } = useSendTransaction();
 
   // 处理swap确认
   const handleSwapConfirm = async (swapTool) => {
@@ -457,10 +446,7 @@ const ChatPage = () => {
   }
   const onSubmit = (nextContent) => {
     if (!nextContent) return;
-    
-    // 在用户消息后附加钱包地址信息（仅发送给LLM，不显示给用户）
-    const walletAddress = userWallet?.address || '未连接钱包';
-    const contentWithWalletInfo = `${nextContent}\n\n<!-- 用户钱包地址: ${walletAddress} -->`;
+  
     
     handleSubmit({
       target: {
@@ -477,17 +463,15 @@ const ChatPage = () => {
   const onPromptsItemClick = (info) => {
     const promptText = info?.data?.description || '';
     if (!promptText) return;
+
+    console.log('promptText:', promptText);
     
-    // 在提示词消息后附加钱包地址信息（仅发送给LLM，不显示给用户）
-    const walletAddress = userWallet?.address || '未连接钱包';
-    const promptWithWalletInfo = `${promptText}\n\n<!-- 用户钱包地址: ${walletAddress} -->`;
-    
-    handleSubmit({
-      target: {
-        value: promptText,
-      },
-    });
+    setInput(promptText);
+    handleSenderChange(promptText);
+    onSubmit(promptText);
   };
+
+  
   const onAddConversation = () => {
     setConversationsItems([
       ...conversationsItems,
@@ -508,9 +492,17 @@ const ChatPage = () => {
     <Space direction="vertical" size={16} className="pt-8">
       <Welcome
         variant="borderless"
-        icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
-        title="Hello, I'm Web3 智能对话平台"
-        description="Base on XXX, AGI product interface solution, create a better intelligent vision~"
+        icon={
+          <Player
+            src="/lotties/bot.json"
+            className="player"
+            loop
+            autoplay
+            style={{ height: '80px', width: '80px', paddingBottom: '20px' }}
+          />
+        }
+        title="Hello, I'm Fezz"
+        description="Base on LLMs, provide a better experience for Web3 & Crypto"
       />
       <Prompts
         title="Do you want?"
@@ -670,9 +662,6 @@ const ChatPage = () => {
           roles={roles}
           className="flex-1"
         />
-
-        {/* 🌟 提示词 */}
-        <Prompts items={senderPromptsItems} onItemClick={onPromptsItemClick} />
         {/* 🌟 输入框 */}
         <Sender
           ref={senderRef}
