@@ -602,12 +602,12 @@ const ChatPage = () => {
     <div className="flex h-[72px] items-center justify-start px-6 box-border">
       <Link href="/">
         <img
-          src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
+          src="/logo/logo.jpg"
           draggable={false}
           alt="logo"
           className="w-6 h-6 inline-block"
         />
-        <span className="inline-block mx-2 font-bold text-gray-900 text-base">Logo</span>
+        <span className="inline-block mx-2 font-bold text-gray-900 text-base">Fezz</span>
       </Link>
     </div>
   );
