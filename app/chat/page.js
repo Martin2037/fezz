@@ -25,8 +25,9 @@ import {
   SmileOutlined,
   LoadingOutlined,
   CheckOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Space, message } from 'antd';
+import { Badge, Button, Space, message, Popover, List, Checkbox } from 'antd';
 import { useSendTransaction, useWallets } from '@privy-io/react-auth';
 import {ethers} from 'ethers';
 import ky from 'ky'; // 引入ky请求库
@@ -214,6 +215,8 @@ const ChatPage = () => {
   const [swapMessageIds, setSwapMessageIds] = useState(new Set());
   // 存储激活状态的swapTool中的toolInvocation.result.content.text对象
   const [swapToolContent, setSwapToolContent] = useState(null);
+  const [mcpListOpen, setMcpListOpen] = useState(false);
+  const [mcpList, setMcpList] = useState(mcpServers.map(item => ({ ...item, checked: true })));
 
   // 处理swap确认
   const handleSwapConfirm = async (swapTool) => {
@@ -296,7 +299,7 @@ const ChatPage = () => {
   const { messages, input, setInput, handleInputChange, handleSubmit, append, isLoading, setMessages } = useChat({
     id: activeKey,
     body: {
-      mcp_list: mcpServers.map(item => {
+      mcp_list: mcpList.map(item => {
         return {
           name: item.name,
           url: typeof window !== 'undefined'
@@ -564,9 +567,38 @@ const ChatPage = () => {
     };
   });
 
+  const handleOpenChange = (newOpen) => {
+    setMcpListOpen(newOpen);
+  };
+
+  const handleChangeMcp = (item) => {
+    item.checked = !item.checked;
+    setMcpList([...mcpList]);
+  };
+
   const attachmentsNode = (
     <Badge dot={attachedFiles.length > 0 && !headerOpen}>
       <Button type="text" icon={<PaperClipOutlined />} onClick={() => setHeaderOpen(!headerOpen)} />
+      <Popover
+        content={
+          <List
+            size="small"
+            header={<div>可选择的MCP服务</div>}
+            // footer={<div>Footer</div>}
+            bordered
+            dataSource={mcpList}
+            renderItem={
+              (item) => <List.Item><Checkbox onChange={() => { handleChangeMcp(item) }} checked={item.checked}>{item.name}</Checkbox></List.Item>
+            }
+          />
+        }
+        // title="Title"
+        trigger="click"
+        open={mcpListOpen}
+        onOpenChange={handleOpenChange}
+      >
+        <Button type="text" icon={<MenuOutlined />} onClick={() => setMcpListOpen(!mcpListOpen)}  />
+      </Popover>
     </Badge>
   );
   const senderHeader = (
