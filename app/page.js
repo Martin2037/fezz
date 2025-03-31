@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import Link from 'next/link';
+import { Router } from "lucide-react";
 
 import {
   ReactFlow,
@@ -253,6 +254,16 @@ export default function Home() {
               <span className="text-xl">🤖</span>
             </div>
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Fezz</span>
+          </div>
+          
+          {/* 导航链接 */}
+          <div className="hidden md:flex items-center">
+            <Link href="/mcps">
+              <div className="px-4 py-2 cursor-pointer text-gray-700 hover:text-purple-600 font-medium flex items-center gap-2 transition-colors">
+                <Router size={18} />
+                Servers
+              </div>
+            </Link>
           </div>
           
           {/* 钱包地址按钮 */}
