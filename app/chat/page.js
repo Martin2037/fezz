@@ -592,7 +592,7 @@ const ChatPage = () => {
             }
           />
         }
-        title="Title"
+        // title="Title"
         trigger="click"
         open={mcpListOpen}
         onOpenChange={handleOpenChange}
