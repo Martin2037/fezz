@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
+import React from "react";
 
 const UserNode = ({ data }) => {
   return (
@@ -250,9 +251,12 @@ export default function Home() {
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Logo + 产品名 */}
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center">
-              <span className="text-xl">🤖</span>
-            </div>
+            <img
+              src="/logo/logo.jpg"
+              draggable={false}
+              alt="logo"
+              className="w-8 h-8 inline-block text-xl"
+            />
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Fezz</span>
           </div>
           
