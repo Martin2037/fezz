@@ -1,7 +1,7 @@
 'use client';
 
 import {PrivyProvider} from '@privy-io/react-auth';
-import {base, bsc ,arbitrum, optimism, polygon} from 'viem/chains';
+import {base, bsc, arbitrum, optimism, polygon, sepolia} from 'viem/chains';
 import {defineChain} from 'viem';
 
 
@@ -35,7 +35,7 @@ export default function Providers({children}) {
                     theme: 'light',
                     accentColor: '#676FFF',
                 },
-                supportedChains: [base, CusBNBChain, arbitrum, optimism, polygon],
+                supportedChains: [base, CusBNBChain, arbitrum, optimism, polygon, sepolia],
                 // Create embedded wallets for users who don't have a wallet
                 embeddedWallets: {
                     ethereum: {

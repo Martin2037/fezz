@@ -216,7 +216,7 @@ const ChatPage = () => {
   // 存储激活状态的swapTool中的toolInvocation.result.content.text对象
   const [swapToolContent, setSwapToolContent] = useState(null);
   const [mcpListOpen, setMcpListOpen] = useState(false);
-  const [mcpList, setMcpList] = useState(mcpServers.map(item => ({ ...item, checked: true })));
+  const [mcpList, setMcpList] = useState([]);
 
   // 处理swap确认
   const handleSwapConfirm = async (swapTool) => {
@@ -433,8 +433,23 @@ const ChatPage = () => {
 
 
   useEffect(() => {
+    async function fetchUserServer(address) {
+        const servers = await ky.post('/api/mcp/getUserPurchases', {
+            json: {
+            address: address,
+            }
+        }).json()
+
+      const handleServers = servers.data.map(item => {
+        return {...item, checked: true}
+      })
+
+      setMcpList(handleServers)
+    }
+
     if (ready) {
       setUserWallet(wallets[0]);
+      fetchUserServer(wallets[0].address)
       console.log('钱包地址:', wallets[0]);
     }
   }, [ready, wallets]);

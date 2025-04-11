@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import {useState, useRef, useEffect} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,17 @@ import { Switch } from '@/components/ui/switch';
 import { motion } from 'motion/react';
 // MCP服务器数据
 import { mcpServers } from '../const/mcps';
+import ky from "ky";
+import {useWallets} from "@privy-io/react-auth";
+import {sepolia} from "viem/chains";
+import {createWalletClient, custom, parseGwei} from "viem";
+import {MCP_REGISTRY_ABI, publicClient, TEST_MCP_REGISTRY} from "@/app/const/server";
 
 // MCP卡片组件
 const McpCard = ({ server, onToggle }) => {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef(null);
+  const {wallets} = useWallets()
 
   const handleCopy = (e) => {
     e.preventDefault();
@@ -25,6 +31,39 @@ const McpCard = ({ server, onToggle }) => {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+  const subscribeMCP = async (serverId) => {
+    const wallet = wallets[0]
+
+    // TODO switch to bsc
+    await wallet.switchChain(sepolia.id)
+
+    const provider = await wallet.getEthereumProvider()
+    const walletClient = createWalletClient({
+      account: wallet.address,
+      chain: sepolia,
+      transport: custom(provider),
+    })
+
+    const [account] = await walletClient.getAddresses()
+    const {request} = await publicClient.simulateContract({
+      address: TEST_MCP_REGISTRY,
+      abi: MCP_REGISTRY_ABI,
+      functionName: 'purchaseServerAccess',
+      args: [serverId],
+      account,
+    })
+
+    console.log('request: ', request)
+
+    await walletClient.writeContract({
+      ...request,
+      type: 0,
+      gas: 210000n,
+      gas_price: parseGwei('20'),
+      maxFeePerGas: parseGwei('20'),
+      maxPriorityFeePerGas: parseGwei('2'),
+    })
+  }
 
   return (
     <div className="relative">
@@ -32,12 +71,12 @@ const McpCard = ({ server, onToggle }) => {
         <Card className="group p-4 h-[320px] transition-all duration-300 hover:shadow-lg hover:border-indigo-300 cursor-pointer overflow-hidden flex flex-col">
           <div className="flex items-center mb-3">
             <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden">
-              <Image 
-                src={server.logo} 
-                alt={`${server.name} logo`} 
-                width={48} 
-                height={48} 
-                className="object-contain" 
+              <Image
+                src={server.logo}
+                alt={`${server.name} logo`}
+                width={48}
+                height={48}
+                className="object-contain"
               />
             </div>
             <div className="ml-3 flex-1">
@@ -48,14 +87,14 @@ const McpCard = ({ server, onToggle }) => {
               <p className="text-sm text-gray-500">by {server.providerName}</p>
             </div>
           </div>
-          
+
           {/* Description section with line clamp */}
           <div className="mb-3">
             <p className="text-sm text-gray-700 line-clamp-3">{server.description}</p>
           </div>
-          
+
           {/* 可复制的URL代码块 */}
-          <div 
+          <div
             className="relative bg-gray-100 dark:bg-gray-800 rounded-md p-2 mb-2 text-sm font-mono cursor-pointer group/code"
             onClick={handleCopy}
           >
@@ -66,33 +105,36 @@ const McpCard = ({ server, onToggle }) => {
               </span>
             </div>
           </div>
-          
+
           <div className="mt-auto pt-2 flex justify-end">
             <div className="h-6"></div>
           </div>
         </Card>
       </Link>
 
-      <div 
+      <div
         className="absolute bottom-4 right-4 flex items-center z-10"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
         }}
       >
-        <span className="mr-2 text-xs text-gray-500 dark:text-gray-400">
-          {server.isEnabled ? "Enabled" : "Disabled"}
-        </span>
+        {/*<span className="mr-2 text-xs text-gray-500 dark:text-gray-400">*/}
+        {/*  {server.isEnabled ? "Enabled" : "Disabled"}*/}
+        {/*</span>*/}
         <div
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggle(server.id);
-          }}
+          // onClick={(e) => {
+          //   e.preventDefault();
+          //   e.stopPropagation();
+          //   onToggle(server.id);
+          // }}
         >
-          <Switch 
-            checked={server.isEnabled}
-          />
+          {/*<Switch*/}
+          {/*  checked={server.isEnabled}*/}
+          {/*/>*/}
+          <Button className={'cursor-pointer'} onClick={() => {
+            subscribeMCP(server.id)
+          }}>订阅</Button>
         </div>
       </div>
     </div>
@@ -100,16 +142,26 @@ const McpCard = ({ server, onToggle }) => {
 };
 
 export default function McpServersPage() {
-  const [servers, setServers] = useState(mcpServers);
+  const [servers, setServers] = useState([]);
   const featuredServers = servers.filter(server => server.isFeatured);
-  
+
   const handleToggle = (id) => {
-    setServers(prevServers => 
-      prevServers.map(server => 
+    setServers(prevServers =>
+      prevServers.map(server =>
         server.id === id ? {...server, isEnabled: !server.isEnabled} : server
       )
     );
   };
+
+  useEffect(() => {
+    async function fetchServers() {
+      const serversData = await ky.post('/api/mcp/getAllServers').json()
+      console.log('serversData: ', serversData)
+      setServers(serversData.data)
+    }
+
+    fetchServers()
+  }, []);
 
   return (
     <div className="relative max-w-7xl mx-auto px-4 py-12">
@@ -120,7 +172,7 @@ export default function McpServersPage() {
             <span className="bg-indigo-500 text-white text-sm px-2 py-0.5 rounded-md mr-2">4</span>
             <span className="text-gray-800 dark:text-gray-200">MCP Servers</span>
           </div>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
