@@ -1,10 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { 
-    NextSSEServerTransport, 
-    createExpressResponse, 
-    createExpressRequest 
+import {
+    NextSSEServerTransport,
+    createExpressResponse,
+    createExpressRequest
 } from "../../transport.js";
-import { getTrendingTokens, getWalletPnlSummary, searchTokens, getTokensMetadata, getWalletTokens } from "./lib.js";
+import {
+    getTrendingTokens,
+    getWalletPnlSummary,
+    searchTokens,
+    getTokensMetadata,
+    getWalletTokens,
+    getPumpNewTokens
+} from "./lib.js";
 import { z } from "zod";
 
 // 创建一个新的 MCP 服务器实例
@@ -18,7 +25,7 @@ const server = new McpServer({
 // 添加获取热门代币工具
 server.tool(
     "trending_tokens",
-    "Get trending tokens on a specific blockchain network & chain id",
+    "Get ERC20 trending tokens on a specific blockchain network & chain id",
     {
         chain_id: z.enum(["1", "56", "8453"]).describe("Chain ID, supported values: 1(Ethereum), 56(BSC), 8453(Base) [if you dont know, you must ask user to provide]")
     },
@@ -29,11 +36,11 @@ server.tool(
                 "56": "bsc",
                 "8453": "base"
             };
-            
+
             const chain = chainIdMap[params.chain_id] || "bsc";
-            
+
             const result = await getTrendingTokens(chain);
-            
+
             const formattedTokens = Array.isArray(result) && result.length > 0
                 ? result.slice(0, 10).map(token => ({
                     chain_id: params.chain_id,
@@ -91,7 +98,7 @@ server.tool(
                     }
                 }))
                 : [];
-            
+
             return {
                 content: [
                     {
@@ -129,10 +136,10 @@ server.tool(
                 "137": "polygon",
                 "8453": "base"
             };
-            
+
             const chain = chainIdMap[params.chain_id] || "eth";
             const result = await getWalletPnlSummary(params.address, chain);
-            
+
             return {
                 content: [
                     {
@@ -183,10 +190,10 @@ server.tool(
                 "137": "polygon",
                 "8453": "base"
             };
-            
+
             const chain = chainIdMap[params.chain_id] || "eth";
             const result = await getTokensMetadata(params.addresses, chain);
-            
+
             // 格式化返回数据，包含所有可能的字段
             const formattedTokens = Array.isArray(result) ? result.map(token => ({
                 chain_id: params.chain_id,
@@ -220,7 +227,7 @@ server.tool(
                 circulating_supply: token.circulating_supply || null,
                 market_cap: token.market_cap || null
             })) : [];
-            
+
             return {
                 content: [
                     {
@@ -259,10 +266,10 @@ server.tool(
                 "137": "polygon",
                 "8453": "base"
             };
-            
+
             const chain = chainIdMap[params.chain_id] || "eth";
             const result = await getWalletTokens(params.address, chain, 50);
-            
+
             // 如果结果包含错误信息则返回错误
             if (result.success === false) {
                 return {
@@ -274,15 +281,15 @@ server.tool(
                     ]
                 };
             }
-            
+
             const minUsdValue = params.min_usd_value || 10;
-            const filteredTokens = Array.isArray(result.result) 
+            const filteredTokens = Array.isArray(result.result)
                 ? result.result.filter(token => {
                     const usdValue = parseFloat(token.usd_value || 0);
                     return usdValue >= minUsdValue;
                   })
                 : [];
-            
+
             // 返回标准化的结果
             return {
                 content: [
@@ -317,6 +324,48 @@ server.tool(
     }
 );
 
+// 添加pump.fun获取最新代币工具
+server.tool(
+    "pump_new_tokens",
+    "Get new tokens on pump.fun",
+    {},
+    async (params) => {
+        try {
+            const result = await getPumpNewTokens();
+
+            const formattedTokens = Array.isArray(result?.result) && result?.result.length > 0
+                ? result?.result.slice(0, 10).map(token => ({
+                    token_address: token?.address || token?.tokenAddress,
+                    name: token.name,
+                    symbol: token.symbol,
+                    decimals: token.decimals || 18,
+                    usdPrice: token.priceUsd || 0,
+                    createdAt: token.createdAt || Math.floor(Date.now() / 1000),
+                    liquidityUsd: token.liquidity || 0,
+                }))
+                : [];
+
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(formattedTokens)
+                    }
+                ]
+            };
+        } catch (error) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `获取热门代币失败: ${error.message}`
+                    }
+                ]
+            };
+        }
+    }
+);
+
 // 全局传输层实例，用于在 GET 和 POST 之间共享
 let transport = null;
 
@@ -329,16 +378,16 @@ export async function GET(request) {
                 try {
                     // 创建模拟的响应对象
                     const expressRes = createExpressResponse(controller);
-                    
+
                     // 创建 SSE 传输层
                     transport = new NextSSEServerTransport("/api/mcp/sse/moralis", expressRes);
-                    
+
                     // 连接到 MCP 服务器
                     server.connect(transport).catch(error => {
                         console.error("Error connecting to MCP server:", error);
                         controller.error(new Error(`Failed to connect to MCP server: ${error.message}`));
                     });
-                    
+
                     console.log("Uniswap MCP Server running on SSE");
                 } catch (error) {
                     console.error("Error starting SSE:", error);
@@ -382,16 +431,16 @@ export async function POST(request) {
             status: 200,
             statusText: "OK",
             json: (data) => {
-                return Response.json(data, { 
-                    status: nextRes.status, 
-                    statusText: nextRes.statusText 
+                return Response.json(data, {
+                    status: nextRes.status,
+                    statusText: nextRes.statusText
                 });
             }
         };
 
         // 处理消息
         await transport.handlePostMessage(expressReq, nextRes);
-        
+
         // 返回响应
         return nextRes.json({});
     } catch (error) {

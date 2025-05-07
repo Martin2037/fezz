@@ -5,7 +5,7 @@ import {
     createExpressRequest
 } from "../../transport.js";
 import {z} from "zod";
-import {getRoute} from "@/app/api/mcp/sse/uniswap/lib";
+import {getPumpSwap, getRoute} from "@/app/api/mcp/sse/uniswap/lib";
 
 // 创建一个新的 MCP 服务器实例
 const server = new McpServer({
@@ -18,7 +18,7 @@ const server = new McpServer({
 // 添加示例工具
 server.tool(
     "swap",
-    "Swap cryptocurrency tokens across multiple blockchain networks with real-time rates and optimal routing. This tool enables seamless token exchanges between Ethereum, BSC, Base, and Arbitrum networks, supporting both native coins (ETH, BNB) and any ERC-20/BEP-20 tokens. The source token always be native token, so don't ask user to provide it.",
+    "Swap cryptocurrency tokens across multiple blockchain networks with real-time rates and optimal routing. This tool enables seamless token exchanges between Ethereum, BSC, Base, and Arbitrum networks except Solana, supporting both native coins (ETH, BNB) and any ERC-20/BEP-20 tokens. The source token always be native token, so don't ask user to provide it.",
     {
         // walletAddress: z.string().length(42).describe('The user wallet address that will be used to perform the swap [if you dont know, you must ask user to provide!]'),
         // srcTokenAddress: z.string().length(42).describe('The source token address that user want to trade, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee [if you dont know, you must ask user to provide! Use context to get address such as the last tool result]'),
@@ -37,6 +37,41 @@ server.tool(
                     text: data,
                 }]
         };
+    }
+);
+
+server.tool(
+    "pump_swap",
+    "Swap cryptocurrency tokens through pump amm swap. This tool only support tokens that on pump.fun that on Solana chain.",
+    {
+        // walletAddress: z.string().length(42).describe('The user wallet address that will be used to perform the swap [if you dont know, you must ask user to provide!]'),
+        // srcTokenAddress: z.string().length(42).describe('The source token address that user want to trade, if token is native token like ETH,BNB, the address is 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee [if you dont know, you must ask user to provide! Use context to get address such as the last tool result]'),
+        dstTokenAddress: z.string().length(44).describe('The token address that user want to trade[if you dont know, you must ask user to provide! Use context to get address such as the last tool result.]'),
+        amount: z.number().gt(0).describe('The token amount that user wants to trade [if you dont know, you must ask user to provide!]'),
+    },
+    async ({dstTokenAddress, amount}) => {
+        try {
+            const walletAddress = "3GJ7SBpeyLe9ZAFCDGU7gA9XMtub44tWzjM3S786zdqm"
+            const data = await getPumpSwap(walletAddress, dstTokenAddress, amount)
+            const result = Buffer.from(data).toString('base64')
+
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: result,
+                    }]
+            };
+        } catch (e) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `获取交易数据失败: ${e.message}`
+                    }
+                ]
+            };
+        }
     }
 );
 

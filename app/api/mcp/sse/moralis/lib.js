@@ -17,7 +17,7 @@ export async function getTrendingTokens(chain = 'bsc') {
                 'X-API-Key': process.env.MORALIS_API_KEY
             }
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -36,7 +36,7 @@ export async function getTrendingTokens(chain = 'bsc') {
 export async function searchTokens(query, chains = ['eth', 'bsc', 'base'], limit = 10) {
     try {
         const chainsStr = Array.isArray(chains) ? chains.join(',') : chains;
-        
+
         const response = await ky.get(`https://deep-index.moralis.io/api/v2.2/tokens/search`, {
             searchParams: {
                 query: query,
@@ -48,7 +48,7 @@ export async function searchTokens(query, chains = ['eth', 'bsc', 'base'], limit
                 'X-API-Key': process.env.MORALIS_API_KEY
             }
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -68,12 +68,12 @@ export async function getTokensMetadata(addresses, chain = 'eth') {
         // 构建查询参数
         const searchParams = new URLSearchParams();
         searchParams.append('chain', chain);
-        
+
         // 添加多个地址参数
         addresses.forEach((address, index) => {
             searchParams.append(`addresses[${index}]`, address);
         });
-        
+
         const response = await ky.get(`https://deep-index.moralis.io/api/v2.2/erc20/metadata`, {
             searchParams,
             headers: {
@@ -81,7 +81,7 @@ export async function getTokensMetadata(addresses, chain = 'eth') {
                 'X-API-Key': process.env.MORALIS_API_KEY
             }
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -107,7 +107,7 @@ export async function getWalletPnlSummary(address, chain = 'eth') {
                 'X-API-Key': process.env.MORALIS_API_KEY
             }
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -135,11 +135,48 @@ export async function getWalletTokens(address, chain = 'eth', limit = 100) {
                 'X-API-Key': process.env.MORALIS_API_KEY
             }
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
         console.error('获取钱包代币列表失败:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getPumpNewTokens() {
+    try {
+        const response = await ky.get(`https://solana-gateway.moralis.io/token/mainnet/exchange/pumpfun/new`, {
+            searchParams: {
+                limit: 10
+            },
+            headers: {
+                'accept': 'application/json',
+                'X-API-Key': process.env.MORALIS_API_KEY
+            }
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('获取热门代币失败:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getSolanaTokenMetadata(tokenAddr) {
+    try {
+        const response = await ky.get(`https://solana-gateway.moralis.io/token/mainnet/${tokenAddr}/metadata`, {
+            headers: {
+                'accept': 'application/json',
+                'X-API-Key': process.env.MORALIS_API_KEY
+            }
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('获取 metadata 失败:', error);
         return { success: false, error: error.message };
     }
 }
