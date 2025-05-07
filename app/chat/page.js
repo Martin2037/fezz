@@ -137,6 +137,7 @@ const roles = {
 
 import { useChat } from '@ai-sdk/react';
 import { MemoizedMarkdown } from '@/components/memoized-markdown';
+import {useSolanaWallets} from "@privy-io/react-auth/solana";
 
 // 用于处理swap交易的组件
 const SwapConfirmation = ({ onConfirm, toolContent }) => {
@@ -208,6 +209,7 @@ const ChatPage = () => {
   const [attachedFiles, setAttachedFiles] = React.useState([]);
   const senderRef = useRef(null);
   const { wallets, ready } = useWallets();
+  const {wallets: solanaWallets} = useSolanaWallets();
   const [userWallet, setUserWallet] = useState("");
   const [isProcessingTx, setIsProcessingTx] = useState(false);
 
@@ -433,6 +435,8 @@ const ChatPage = () => {
 
 
   useEffect(() => {
+    console.log('wallets', wallets)
+    console.log('solanaWallets', solanaWallets)
     async function fetchUserServer(address) {
         const servers = await ky.post('/api/mcp/getUserPurchases', {
             json: {

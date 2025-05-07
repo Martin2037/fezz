@@ -7,6 +7,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import { Mail } from 'lucide-react';
 import {useRouter} from "next/navigation";
+import {useSolanaWallets} from "@privy-io/react-auth/solana";
 
 export default function EmailLogin() {
     const [email, setEmail] = useState("");
@@ -23,10 +24,15 @@ export default function EmailLogin() {
             }
         }
     })
+    const {createWallet: createSolanaWallet} = useSolanaWallets()
     const { sendCode, loginWithCode } = useLoginWithEmail({
         onComplete: async (params) => {
             console.log('params', params)
-            await createWallet()
+            try {
+               await Promise.all([createWallet(), createSolanaWallet()])
+            } catch (error) {
+                console.log('error', error)
+            }
         }
     });
     const router = useRouter()
